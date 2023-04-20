@@ -3,8 +3,8 @@ EXECBIN  = hello
 SOURCES  = $(wildcard *.c)
 OBJECTS  = $(SOURCES:%.c=%.o)
 
-CC       = clang
-CFLAGS   = -Wall -Wpedantic -Werror -Wextra
+CC       = clang-15
+CFLAGS   = -Wall -Wpedantic -Werror -Wextra -gdwarf-4
 
 .PHONY: all clean
 
