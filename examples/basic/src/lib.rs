@@ -1,4 +1,6 @@
 use shimmer::{shimmer, shimmer_hook};
+use std::fs::read_link;
+use std::path::PathBuf;
 
 #[shimmer]
 #[derive(Default)]
@@ -28,7 +30,12 @@ impl BasicIO for State {
         buf: *mut libc::c_void,
         nbytes: libc::size_t,
     ) -> libc::c_int {
-        println!("[read] fd={fd}, size={nbytes}");
+        let path_fd = PathBuf::from(format!("/proc/self/fd/{}", fd));
+        let file_name = read_link(path_fd).unwrap();
+        println!(
+            "[read] fd={fd}, path={}, size={nbytes}",
+            file_name.display()
+        );
     }
 
     unsafe fn write(
@@ -37,6 +44,11 @@ impl BasicIO for State {
         buf: *mut libc::c_void,
         nbytes: libc::size_t,
     ) -> libc::c_int {
-        println!("[write] fd={fd}, size={nbytes}");
+        let path_fd = PathBuf::from(format!("/proc/self/fd/{}", fd));
+        let file_name = read_link(path_fd).unwrap();
+        println!(
+            "[write] fd={fd}, path={}, size={nbytes}",
+            file_name.display()
+        );
     }
 }
