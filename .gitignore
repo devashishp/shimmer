@@ -1,3 +1,4 @@
+*.txt
 target
 Cargo.lock
 hello
