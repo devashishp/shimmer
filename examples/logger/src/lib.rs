@@ -4,11 +4,31 @@ use serde_yaml;
 use shimmer::prelude::*;
 
 #[shimmer]
-#[derive(Default)]
-struct State {}
+struct State {
+    logger: Result<bool, bool>,
+}
+impl Default for State {
+    fn default() -> Self {
+        Self { logger: Err(true) }
+    }
+}
+impl State {
+    fn init_logger(&mut self) {
+        if !self.logger.is_ok() {
+            let _logger =
+                log4rs::init_raw_config(serde_yaml::from_str(include_str!("log4rs.yml")).unwrap());
+        }
+    }
+}
 
 trait BasicIO {
     unsafe fn write(
+        &mut self,
+        fd: libc::c_int,
+        buf: *mut libc::c_void,
+        nbytes: libc::size_t,
+    ) -> libc::c_int;
+    unsafe fn read(
         &mut self,
         fd: libc::c_int,
         buf: *mut libc::c_void,
@@ -24,9 +44,16 @@ impl BasicIO for State {
         buf: *mut libc::c_void,
         nbytes: libc::size_t,
     ) -> libc::c_int {
-        let config_str = include_str!("log4rs.yml");
-        let config = serde_yaml::from_str(config_str).unwrap();
-        log4rs::init_raw_config(config).unwrap();
+        self.init_logger();
         info!("[write] fd={fd}, size={nbytes}");
+    }
+    unsafe fn read(
+        &mut self,
+        fd: libc::c_int,
+        buf: *mut libc::c_void,
+        nbytes: libc::size_t,
+    ) -> libc::c_int {
+        self.init_logger();
+        info!("[read] fd={fd}, size={nbytes}");
     }
 }
